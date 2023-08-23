@@ -1,8 +1,8 @@
 use std::collections::HashMap;
-use utils::headers_spliter;
-use std::net::TcpStream;
 use std::io::Read;
+use std::net::TcpStream;
 use std::str::from_utf8;
+use utils::headers_spliter;
 
 use super::{spliter, utils};
 
@@ -38,12 +38,12 @@ impl Request {
             body,
         });
     }
-    pub fn request_handler(mut stream: TcpStream)-> Request{
-        let mut buff: [u8; 1024] = [0;1024];
+    pub fn request_handler(mut stream: TcpStream) -> Request {
+        let mut buff: [u8; 1024] = [0; 1024];
         stream.read(&mut buff).expect("faild to read");
         let request = from_utf8(&buff).unwrap();
+        println!("{}", request);
         return Request::new(request).unwrap();
-        println!("{:?}", request);
     }
 }
 

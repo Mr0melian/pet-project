@@ -4,7 +4,7 @@ use std::thread;
 
 fn main() {
     loop {
-        let server = Server::new("192.168.0.4:8080");
+        let server = Server::new("127.0.0.1:8080");
         let thread = thread::spawn(move || {
             server.run();
         });

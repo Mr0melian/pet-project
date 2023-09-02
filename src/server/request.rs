@@ -1,34 +1,31 @@
 use std::collections::HashMap;
 use std::io::Read;
 use std::net::TcpStream;
-use std::str::from_utf8;
-use utils::headers_spliter;
-
-use super::{spliter, utils};
-
-#[derive(Debug)]
+use super::utils::{headers_spliter, spliter};
 
 pub struct Request {
-    method: Method,
-    url: String,
-    http: String,
-    headers: HashMap<String, String>,
-    body: Option<String>,
+    pub method: Method,
+    pub url: String,
+    pub http: String,
+    pub headers: HashMap<String, String>,
+    pub body: String,
 }
 
 impl Request {
-    pub fn new(request: &str) -> Result<Self, RequestError> {
-        let mut lines = spliter(request, "\r\n");
+    pub fn new(request: String) -> Result<Self, RequestError> {
+        let massege = spliter(request, "\r\n\r\n");
+        let mut lines = spliter(massege.get(0).unwrap().to_string(), "\r\n");
 
-        let s = spliter(lines.remove(0), " ");
+        let s = spliter(lines.remove(0).to_string(), " ");
 
-        let method = Method::method_handler(s[0])?;
+        let method = Method::method_handler(&s[0])?;
 
-        let (url, http) = (s[1].to_string(), s[2].to_string());
+        let (url, http) = (s.get(1).unwrap().to_string(), s.get(2).unwrap().to_string());
 
-        let headers = headers_spliter(lines.clone());
+        let headers = headers_spliter(lines);
 
-        let body = Option::None;
+        let body = massege.get(1).unwrap().to_string();
+        
 
         return Ok(Request {
             method,
@@ -38,17 +35,22 @@ impl Request {
             body,
         });
     }
-    pub fn request_handler(mut stream: TcpStream) -> Request {
+
+    pub fn request_handler<'a>(mut stream: &TcpStream) -> Request {
         let mut buff: [u8; 1024] = [0; 1024];
         stream.read(&mut buff).expect("faild to read");
-        let request = from_utf8(&buff).unwrap();
+        let request = String::from_utf8_lossy(&buff[..]).to_string();
         println!("{}", request);
         return Request::new(request).unwrap();
     }
+
+
+
+
 }
 
 #[derive(Debug)]
-enum Method {
+pub enum Method {
     GET,
     PUT,
     SUBMIT,
